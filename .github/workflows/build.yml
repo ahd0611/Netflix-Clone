@@ -9,7 +9,7 @@ on:
 jobs:
   build-analyze-scan:
     name: Build
-    runs-on: [ahd0611]
+    runs-on: [netflix]
     steps:
       - name: Checkout Code
         uses: actions/checkout@v2
@@ -41,7 +41,7 @@ jobs:
 
   deploy:
      needs: build-analyze-scan
-     runs-on: [ahd0611]   
+     runs-on: [netflix]   
      steps: 
        - name: Pull the docker Image
          run: docker pull ahd0611/netflix-clone:latest

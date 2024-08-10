@@ -24,7 +24,19 @@ jobs:
       - name: Npm Install
         run: npm install    
 
-      - name: install trivy
-        run: trivy fs . 
+      - name: Install Trivy 
+        run: trivy fs . > trivyfs.txt  
+
+      - name: Docker Build & Push
+        run: |
+          docker build -t netflix-clone .
+          docker tag netflix-clone ahd0611/netflix-clone:latest
+          docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
+          docker push ahd0611/netflix-clone:latest
+        env:
+          DOCKER_CLI_ACI: 1
+
+      - name: Trivy Image Scan
+        run: trivy image ahd0611/netflix-clone:latest > trivyimage.txt  
 
 

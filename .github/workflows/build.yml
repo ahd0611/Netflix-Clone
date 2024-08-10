@@ -9,7 +9,7 @@ on:
 jobs:
   build-analyze-scan:
     name: Build
-    runs-on: ubuntu-latest
+    runs-on: [ahd0611]
     steps:
       - name: Checkout Code
         uses: actions/checkout@v2
@@ -24,17 +24,8 @@ jobs:
       - name: Npm Install
         run: npm install    
 
-      - name: install trivy
-        run: |
-          #install trivy
-          sudo apt-get install wget apt-transport-https gnupg lsb-release -y
-          wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | gpg --dearmor | sudo tee /usr/share/keyrings/trivy.gpg > /dev/null
-          echo "deb [signed-by=/usr/share/keyrings/trivy.gpg] https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main" | sudo tee -a /etc/apt/sources.list.d/trivy.list
-          sudo apt-get update
-          sudo apt-get install trivy -y
-          #command to scan files
-          trivy fs . > trivyfs.txt
-          
+      - name: Install Trivy 
+        run: trivy fs . > trivyfs.txt  
 
       - name: Docker Build & Push
         run: |
@@ -46,6 +37,17 @@ jobs:
           DOCKER_CLI_ACI: 1
 
       - name: Trivy Image Scan
-        run: trivy image ahd0611/netflix-clone:latest > trivyimage.txt  
+        run: trivy image ahd0611/netflix-clone:latest > trivyimage.txt
+
+  deploy:
+     needs: build-analyze-scan
+     runs-on: [ahd0611]   
+     steps: 
+       - name: Pull the docker Image
+         run: docker pull ahd0611/netflix-clone:latest
+       - name: Trivy Image Scan
+         run: trivy image ahd0611/netflix-clone:latest > trivyimage.txt
+       - name: Run the container netflix-clone
+         run: docker run -d --name netflix-clone -p 3000:80 ahd0611/netflix-clone:latest      
 
 
